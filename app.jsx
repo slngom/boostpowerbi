@@ -742,12 +742,20 @@ function App() {
       userAgent: navigator.userAgent,
     };
     try {
-      const res = await fetch(endpoint, {
+      // const res = await fetch(endpoint, {
+      //   method: "POST",
+      //   mode: "cors",
+      //   headers: { "Content-Type": "text/plain;charset=utf-8" },
+      //   body: JSON.stringify(payload),
+      // });
+
+      await fetch(window.BOOST_SHEETS_ENDPOINT, {
         method: "POST",
-        mode: "cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        mode: "no-cors",                         // ← ajouter cette ligne
+        headers: { "Content-Type": "text/plain" }, // ← changer le Content-Type
         body: JSON.stringify(payload),
       });
+      
       const out = await res.json().catch(() => ({}));
       if (!res.ok || out.ok === false) throw new Error(out.error || `HTTP ${res.status}`);
       return { ok: true };
