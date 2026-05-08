@@ -748,13 +748,12 @@ function App() {
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
       });
-      const out = await res.json().catch(() => ({}));
-      if (!res.ok || out.ok === false) throw new Error(out.error || `HTTP ${res.status}`);
-      return { ok: true };
-    } catch (err) {
-      return { ok: false, error: err.message || String(err) };
-    }
-  };
+    // Après
+await fetch("/.netlify/functions/submit", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
 
   const next = async () => {
     const e = validateStep(step, data);
