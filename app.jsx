@@ -203,6 +203,7 @@ function ProgressStepper({ current, style }) {
       </div>
     );
   }
+  // default: numbered horizontal stepper
   return (
     <div className="prog-stepper">
       {STEPS.map((s, i) => {
@@ -581,7 +582,7 @@ function Success({ data, onReset }) {
   );
 }
 
-/* ---------- DECOR PANEL ---------- */
+/* ---------- DECOR PANEL (left side, variant: split) ---------- */
 function DecorPanel({ current, accent, data }) {
   const completion = Math.min(100, Math.round((current / STEPS.length) * 100));
   return (
@@ -727,49 +728,33 @@ function App() {
     return { ...d, [k]: [...arr, v] };
   });
 
-  // ─── SOUMISSION ────────────────────────────────────────────────────────────
   const submitToSheet = async () => {
-    // Remapper les champs formulaire → noms attendus par le script GAS
-    const payload = {
-      prenom:            data.firstName,
-      nom:               data.lastName,
-      email:             data.email,
-      telephone:         data.phone,
-      organisation:      data.company,
-      poste:             data.role,
-      niveau:            data.level,
-      modules:           data.modules,   // array → GAS convertit en "A | B | C"
-      creneaux:          data.slots,     // array → GAS convertit en "A | B | C"
-      duree:             data.duration,
-      sourceDecouverte:  data.source,
-      objectif:          data.goal,
-      descriptionProjet: data.project,
-      commentaires:      data.comments,
-      consentement:      data.consent,
-      userAgent:         navigator.userAgent,
-    };
-
-    // Mode dégradé : si l'endpoint GAS n'est pas configuré, on simule le succès
     const endpoint = window.BOOST_SHEETS_ENDPOINT;
     if (!endpoint || endpoint.includes("YOUR_DEPLOYMENT_ID")) {
       console.warn("[Boost] Aucun endpoint Apps Script configuré — envoi simulé.");
       return { ok: true, simulated: true };
     }
-
+    const payload = {
+      ...data,
+      modules: data.modules.join(", "),
+      slots: data.slots.join(", "),
+      submittedAt: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+    };
     try {
-      const res = await fetch("/.netlify/functions/submit", {
+      const res = await fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload),
       });
       const out = await res.json().catch(() => ({}));
-      if (!res.ok || out.success === false) throw new Error(out.error || `HTTP ${res.status}`);
+      if (!res.ok || out.ok === false) throw new Error(out.error || `HTTP ${res.status}`);
       return { ok: true };
     } catch (err) {
       return { ok: false, error: err.message || String(err) };
     }
   };
-  // ──────────────────────────────────────────────────────────────────────────
 
   const next = async () => {
     const e = validateStep(step, data);
@@ -788,6 +773,7 @@ function App() {
     setData(initial);
   };
 
+  // accent CSS var
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", t.accent);
   }, [t.accent]);
@@ -796,6 +782,7 @@ function App() {
 
   return (
     <div className={`app ${themeClass}`}>
+      {/* ambient grid */}
       <div className="bg-grid" aria-hidden="true" />
       <div className="bg-gradient" aria-hidden="true" />
 
@@ -863,6 +850,7 @@ function App() {
         </main>
       </div>
 
+      {/* Tweaks panel */}
       <TweaksPanel title="Tweaks">
         <TweakSection title="Thème">
           <TweakRadio
