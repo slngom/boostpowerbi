@@ -752,6 +752,7 @@ function App() {
       await fetch(window.BOOST_SHEETS_ENDPOINT, {
         method: "POST",
         mode: "no-cors",                         // ← ajouter cette ligne
+        credentials: "omit", 
         headers: { "Content-Type": "text/plain" }, // ← changer le Content-Type
         body: JSON.stringify(payload),
       });
